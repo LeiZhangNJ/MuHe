@@ -1,0 +1,103 @@
+import logging
+import gensim
+from gensim.models import Word2Vec, KeyedVectors
+import pandas as pd
+import nltk
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.decomposition import PCA
+import adjustText
+import numpy as np
+from nltk.tokenize import MWETokenizer
+
+
+
+
+df = pd.read_csv('tt.csv')
+
+print(df.head(10))
+
+newsTitles = df['title'].values 
+
+print(newsTitles)
+
+
+newsVec = [nltk.word_tokenize(title) for title in newsTitles] 
+
+print(newsVec)
+
+
+tokenizer = MWETokenizer([('Scores', 'killed')], separator = '_')
+
+newsVec = [tokenizer.tokenize(nltk.word_tokenize(title)) for title in newsTitles] 
+
+print(newsVec)
+
+
+
+model = Word2Vec(newsVec, min_count=1, vector_size=32) 
+
+model.wv.save_word2vec_format('w2vModel.bin') 
+
+model = KeyedVectors.load_word2vec_format('w2vModel.bin', binary= True) 
+
+
+Me = model.wv.most_similar('solar cell') 
+
+print(Me)
+
+
+vec = model.wv['Japan'] - model.wv['US'] + model.wv['Egypt'] 
+
+word0 = model.wv.most_similar([vec]) 
+  
+print(word0)
+
+
+print(model.wv['Japan']) 
+
+plt.figure(figsize=(32, 1))
+
+sns.heatmap([model.wv["US"]],
+            cbar=True,
+            xticklabels=False,
+            yticklabels=False,
+            linewidths=1)
+plt.show()
+
+
+
+word1 = model.wv.most_similar(negative = ['US'], topn = 5) 
+
+print(word1)
+
+
+word2 = model.wv.similarity('US','Japan') 
+
+print(word2)
+
+
+result = model.wv.most_similar(positive=['US', 'Japan'], negative=['Egypt']) 
+
+print("{}: {:.4f}".format(*result[0])) 
+
+X = np.array(model.wv['Japan','Egypt','US']) 
+
+pca = PCA(n_components=2) 
+
+Y = pca.fit_transform(X) 
+
+print(Y)
+
+
+txt = ['Japan','Egypt','US'] 
+
+x = Y[:,0] 
+
+y = Y[:,1] 
+
+plt.scatter(x, y)
+for i in range(len(x)):
+    plt.annotate(txt[i], xy = (x[i], y[i]), xytext = (x[i]+0.001, y[i]+0.001)) #使用matplotlib 
+
+plt.show() 
