@@ -1,0 +1,57 @@
+import logging
+import gensim
+from gensim.models import word2vec, KeyedVectors
+import pandas as pd
+import nltk
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.decomposition import PCA
+import adjustText
+import numpy as np
+from nltk.tokenize import MWETokenizer
+file1 = open('1960-2020.txt', 'r', encoding='utf-8') # 打开要去掉空行的文件
+file2 = open('new.txt', 'w', encoding='utf-8') # 生成没有空行的文件
+
+for line in file1.readlines():
+    if line == '\n':
+       line = line.strip("\n")
+    file2.write(line)
+print('输出成功....')
+file1.close()
+file2.close()
+
+
+df = pd.read_csv('18-21.csv') #读取数据列表
+
+ 
+newsTitles = df['abs'].values #读取列表中的标题一列
+
+
+with open("1991.txt", 'rb') as f:  # 打开文件
+    data = f.read()  # 读取文件
+
+
+tokenizer = MWETokenizer([('solar', 'cell')], separator = '_')
+
+
+newsVec = [tokenizer.tokenize(nltk.word_tokenize(str(data)))] #用nltk自定义词典将标题分词并保留特定词组
+sentences = word2vec.Text8Corpus('new.txt')
+model = word2vec.Word2Vec(sentences, min_count=2, vector_size=100, window=5,sg=1,sample=1e-4) #训练word2vec模型
+
+print("计算某个词的相关词列表")
+word = 'solar'
+result2 = model.wv.most_similar(word, topn=3000)  # 3000个最相关的
+print("和" + word + "最相关的词有：")
+for item in result2:
+     print(item[0])
+print("\n================================")
+
+model.wv.save_word2vec_format('w2vModel-1999.bin')#保存为模型类文件
+
+model = KeyedVectors.load_word2vec_format('w2vModel04.bin') #以Word2vec文件形式打开刚刚保存的模型类文件
+
+
+word2 = model.similarity('solar_cell ','CH3NH3PbBr3' ) #计算任意两个词向量之间的余弦相似度
+
+print(word2)
+ 
