@@ -1,0 +1,63 @@
+import logging
+import gensim
+from gensim.models import word2vec
+from sklearn.decomposition import PCA
+from matplotlib import pyplot
+from sklearn.manifold import TSNE
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import manifold, datasets
+from time import time
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.ticker import NullFormatter
+
+
+model1 = gensim.models.KeyedVectors.load_word2vec_format("word2Vecsciences.bin", binary=True)
+
+f = open(r'xjwjj.txt', 'r', encoding='utf-8')
+cem = []
+for i in f.readlines():
+    d = i.strip().strip(',').split(',')
+    cem += d #原文件读取至cem
+
+cemm = []
+i = 0
+while i<len(cem):
+    lll = cem[i].strip()
+    cemm.append(lll)
+    i += 1          # 去除空格保存至cemm
+ii = 0
+chem = [] #最终结果chem
+while ii<len(cemm): #去除数字
+    try:
+        float(cemm[ii])
+        ii = ii+1
+    except:
+        chem.append(cemm[ii])
+        ii = ii+1
+newschem = []
+for id in chem:
+    if id not in newschem:
+        newschem.append(id)
+         #去重
+'''print("-----\n")
+for ss in range(len(newschem)):
+   try:
+        y1 = model1.similarity(u"photovoltaic", newschem[ss])
+        print(newschem[ss])
+   except KeyError:
+        y1 = 0
+
+print("-----\n")'''
+
+X = []
+
+tsne = PCA(n_components=2)
+result = tsne.fit_transform(X)
+# 可视化展示
+pyplot.scatter(result[:, 0], result[:, 1])
+words = []
+
+for i, word in enumerate(words):
+	 pyplot.annotate(word, xy=(result[i, 0], result[i, 1]))
+pyplot.show()
