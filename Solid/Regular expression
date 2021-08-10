@@ -1,0 +1,22 @@
+import os
+import xlwt
+import re
+# -*- coding: UTF-8 -*-
+
+import datetime
+import time
+import json
+import pandas as pd
+f = open("solid.txt", "r", encoding='utf-8')     #打开test.txt文件，以只读得方式，注意编码格式，含中文
+t = f.read()               #将文件的内容读取出来赋值给t
+f.close()                                       #关闭test.txt文件
+pattern = re.compile('==.*?",')   #定义一个正则表达式
+result = pattern.findall(t)        #进行匹配，找到所有满足条件的
+results = result
+for i in range(0,len(result)):
+  lis = re.sub('result','',result[i])
+  results[i]=lis
+print(results)
+dataframe = pd.DataFrame(results)
+dataframe.to_csv('reac.csv')
+
