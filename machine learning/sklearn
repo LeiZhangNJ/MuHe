@@ -1,0 +1,76 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
+import seaborn as sns
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import svm
+from sklearn.svm import SVC
+from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
+from sklearn.naive_bayes import GaussianNB
+from gplearn.genetic import SymbolicRegressor
+from gplearn.genetic import SymbolicTransformer
+dataset = pd.read_csv('i-v原始数据Sr.csv')
+X = dataset.iloc[:, :-1].values
+Y = dataset.iloc[:,-1].values
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.29, random_state = 0)
+
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+from sklearn.neighbors import KNeighborsClassifier
+'''classifier = GaussianNB(priors=None, var_smoothing=1e-09)
+svm.SVC(C=1, probability = True, kernel= 'poly',degree=5 )
+RandomForestClassifier(n_estimators =10, max_features = "auto", random_state=100, max_depth = 5, min_samples_leaf = 2,min_samples_split = 5)
+KNeighborsClassifier(n_neighbors = 5,weights= 'distance',p=3)
+
+
+classifier.fit(X_train, Y_train)
+y_pred = classifier.predict(X_test)
+from sklearn.metrics import confusion_matrix
+
+cm = confusion_matrix(Y_test,y_pred)
+print(y_pred)
+y_score = classifier.predict_proba(X_test)
+fpr, tpr, thresholds = roc_curve(Y_test, y_score[:,1])
+roc_auc = auc(fpr, tpr)
+plt.subplots(figsize=(7, 5.5))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.0])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend(loc="lower right")
+plt.show()
+sns.set()
+f,ax=plt.subplots()
+
+y_true = [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0]
+
+C2 = confusion_matrix(y_true, y_pred, labels=[0,1])
+sns.heatmap(C2,annot=True,ax=ax)
+ax.set_title('confusion matrix') #标题
+ax.set_xlabel('predict') #x轴
+ax.set_ylabel('true') #y轴
+plt.show()'''
+est_gp = SymbolicRegressor(population_size=5000,
+                           generations=20, stopping_criteria=0,
+                           p_crossover=0.7, p_subtree_mutation=0.1,
+                           p_hoist_mutation=0.05, p_point_mutation=0.1,
+                           max_samples=0.9, verbose=1,
+                           parsimony_coefficient=0.01, random_state=0)
+function_set = ['add', 'sub', 'mul', 'div',
+                'sqrt', 'log', 'abs', 'neg', 'inv',
+                'max', 'min']
+
+
+
+est_gp.fit(X, Y)
+
+print(est_gp._program)
