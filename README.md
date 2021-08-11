@@ -17,3 +17,6 @@ The Chemdataextractor code is available on the official website.
 当数据集过大时导致txt文件难以打开，可直接在Pycharm里进行操作
 
 When the dataset is too large making it difficult to open the txt file, you can do it directly in Pycharm
+
+Solid reaction数据集引用自：
+Kononova, O., Huo, H., He, T., Rong Z., Botari, T., Sun, W., Tshitoyan, V. and Ceder, G., 2019. Text-mined dataset of inorganic materials synthesis recipes. Scientific Data 6: 203.
