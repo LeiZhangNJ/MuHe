@@ -1,0 +1,134 @@
+from selenium import webdriver
+from time import sleep
+from lxml import etree
+
+def get_detail(test_url):
+    t1 = re.search('filename',test_url,re.I)
+    t2 = test_url.split(t1.group(0))[-1]
+    c = re.match(r'\W(.*?)\W',t2,re.I)
+    filename = c.group(0).strip('&')
+    detail_url = "https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=CJFQ&filename" + filename
+    print(detail_url)
+    return detail_url
+
+tb = webdriver.Chrome()  # 模拟打开Chrome浏览器
+tb.get("https://kns.cnki.net/kns/brief/result.aspx?dbprefix=SCDB&crossDbcodes=CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CCJD")
+# 选择期刊板块
+qikan = tb.find_elements_by_xpath('//*[@id="CJFQ"]/a')[0]  # 寻找
+qikan.click() # 点击期刊
+sleep(1.5)
+# 输入关键词
+keywords1 = tb.find_element_by_id('txt_1_value1')  # 寻找第一个关键词输入框
+keywords2 = tb.find_element_by_id("txt_1_value2")  # 寻找第二个关键词输入框
+keywords1.send_keys("化学")   # 请输入第一个关键词
+keywords2.send_keys("材料")   # 请输入第二个关键词
+
+
+btn1 = tb.find_element_by_id("btnSearch")  # 寻找检索按钮
+btn1.click()   # 点击检索
+sleep(1.5)
+
+# 我们发现知网的列表内容是嵌入在iframe标签下的，因此要将目标定位到iframe标签内
+tb.switch_to.frame('iframeResult')  # iframe的id
+page_text = tb.page_source   # 获取页面内容
+tree1 = etree.HTML(page_text)   # etree对象
+sleep(1.5)
+
+# 设置每页显示五十页，跳转到新的url
+fifty_url=tree1.xpath('//*[@id="id_grid_display_num"]/a[3]/@href')[0]  # 我们设置每页显示50个，有利于快速获取
+new_url = 'https://kns.cnki.net'+fifty_url  # 在selenium中，访问50页会跳往新的页面（因为这里我们是get一个新的url,正常访问知网是不会跳页面的）
+tb.get(new_url)  # 跳转
+sleep(1.5)
+
+page_text = tb.page_source  # 获取当前页面所有内容
+
+fp = open("化学与材料.txt",'a',encoding="utf8")  # 打开提前建立的存储文件存入最终爬取得到的网址，这个txt文件里边只有网址！
+
+
+# 设置读取10页的内容，也就是约500篇文章，可以自行更改！
+for i in range(10):
+    tree2= etree.HTML(page_text)  # etree对象
+    # 使用xpath获取列表页链接信息（通过标题链接，我们能最终访问到详情页）并存入文件
+    content = tree2.xpath('//*[@id="ctl00"]/table/tbody/tr[2]/td/table/tbody//tr/td[2]/a/@href')
+    for index,j in enumerate(content,start=1):
+        print(index*(i+1),j)  # 这里不用看，只是为了方便看爬下来的信息，使用时正常for循环就可以
+        # 这里是不是看不大懂，为什么要调用一个函数，嘿嘿，等会你就知道了
+        res = get_detail(j)  # 调用正则表达式，本人正则极其没有天赋，不要嘲笑我。
+        fp.write(res+'\n')   # 写入
+
+    # 换页（找到下一页按钮的位置，我们选择div下的最后一个a标签，获取其链接）
+    next_src = tree2.xpath('//*[@id="ctl00"]/table/tbody/tr[3]/td/table/tbody/tr/td/div/a[last()]/@href')[0]
+    next_url = "https://kns.cnki.net/kns/brief/brief.aspx"+next_src
+    tb.get(next_url)  # 跳转到下一页
+    page_text = tb.page_source   # 获取下一页的页面内容
+
+sleep(4)  # 等待一段时间
+fp.close()   # 关闭文件
+tb.quit()  # 关闭selenium
+
+#获取网址结束，下面开始爬取详情内容！
+
+import requests
+import time
+from lxml import etree
+import pandas as pd
+# 请求头
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:58.0) Gecko/20100101 Firefox/58.0',
+}
+start_time = time.time()  # 开始时间
+def get_detail(url,df_all):
+    global count
+    print("正在尝试第%d篇......"%(count+1))
+    try:  # 处理外文文献报错
+        # time.sleep(2)
+        response = requests.get(url=url,headers=headers)  # 发起请求
+        tree = etree.HTML(response.content)   # 获取二进制信息
+        title = tree.xpath('/html/body/div[2]/div[1]/div[3]/div/div/div[3]/div/h1/text()')[0] # 标题
+        author = tree.xpath('//*[@id="authorpart"]//text()')[0] # 作者
+        abstract = tree.xpath('//*[@id="ChDivSummary"]/text()')[0]  # 摘要
+        keywords = tree.xpath("/html/body/div[2]/div[1]/div[3]/div/div/div[5]/p//text()")  # 关键词
+        journal = tree.xpath('/html/body/div[2]/div[1]/div[3]/div/div/div[1]/div[1]/span/a[1]/text()')[0]  # 期刊
+        hasPeking = tree.xpath('/html/body/div[2]/div[1]/div[3]/div/div/div[1]/div[1]/a[1]/text()')  # 是否北大核心
+        hasCSSCI = tree.xpath('/html/body/div[2]/div[1]/div[3]/div/div/div[1]/div[1]/a[2]/text()')   # 是否CSSCI
+        # 由于某些原因，不大会写逻辑，因此判断是否是北大核心以及CSSCI有点复杂
+        isPeking_true = ""
+        isCSSCI_true = ""
+        if  hasPeking and hasPeking[0] == "北大核心":
+            isPeking_true = hasPeking[0]
+        elif hasPeking and hasPeking[0] == "CSSCI":
+            isCSSCI_true = hasPeking[0]
+            hasPeking[0] = ""
+        else:
+            isPeking_true = " "
+        if isCSSCI_true == ''  and hasCSSCI:
+            isCSSCI_true = hasCSSCI[0]
+        keyword = ""
+        for item in keywords:
+            keyword += item.strip()
+        df = pd.DataFrame({
+            '标题': title,
+            '作者': author,
+            '摘要': abstract,
+            '关键词': keyword,
+            '期刊类型': journal,
+            '北大核心': isPeking_true,
+            'CSSCI': isCSSCI_true,
+        }, index=[0])
+        df_all = df_all.append(df, ignore_index=True)
+        print("sucess")
+        # time.sleep(1)
+        count+=1
+    except:
+        print("无法访问！")
+    return df_all
+
+with open("化学与材料.txt",'r') as f:
+    url_list = f.readlines()
+df_all = pd.DataFrame()
+count = 0
+for i in url_list[:50]:  #在这里设置需要获取摘要等内容的文献个数，需要小于等于刚才爬取至txt文件的网址个数，这边默认为50
+    df_all = get_detail(i,df_all)
+
+df_all.to_excel('demo1.xls', index=False)  # 将文献详情导出至提前建好的excel文件
+print("成功获取%d篇论文，耗时%ds"%(count,time.time()-start_time))
