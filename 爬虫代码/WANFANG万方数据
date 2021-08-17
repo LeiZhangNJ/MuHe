@@ -94,25 +94,28 @@ def search(sums,keywords): #搜索模块
     driver = webdriver.Chrome()
     driver.get(url)
     driver.find_element_by_xpath('.//*[@class="tab-item"]').click()
-    sleep(1)
+    sleep(1) #间隔时间
 
     driver.find_element_by_xpath('.//*[@class="text-input-area"]/div[1]/textarea').send_keys(keywords)
     driver.find_element_by_xpath('.//*[@class="submit-btn"]').click()
-    sleep(1)
+    sleep(1) #间隔时间
     mk_num = driver.find_element_by_xpath('.//*[@class="total-number"]').text
     mark_num = int(mk_num[2:-3])
     #num为实际可获取的论文数量
     num = min(mark_num,sums)
     want_num = num
+    page = 1 #初始页码为1
     while(1):
         results = driver.find_elements_by_xpath('.//*[@class="result-list"]/div[3]/div')
         nums = min(min(len(results)-1, 20),(want_num))
-        get_massages(nums, results)
+        if page >0: #设置从那一页开始爬取
+          get_massages(nums, results)
         want_num -=nums
         if want_num == 0:
             break
         driver.find_element_by_xpath('.//*[@class="next"]').click()
-        sleep(1)
+        page = page+1 #自动翻页
+        sleep(1) #间隔时间
     driver.close()
 
 address = 'C:\\Users\\SNBYD\\Desktop\\' #输出结果文件的保存地址，可根据需要自行更改
