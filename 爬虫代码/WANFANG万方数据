@@ -1,0 +1,121 @@
+import json
+from time import sleep
+
+from selenium import webdriver
+
+url = 'https://s.wanfangdata.com.cn/advanced-search/paper'#万方数据库网址
+#浏览器后台
+# options = webdriver.ChromeOptions()
+# options.add_argument("--headless")
+# driver = webdriver.Chrome(options = options) #打开浏览器
+# driver.close()
+
+min = lambda x, y: x if x < y else y
+
+def save_to_json(d,address,type): #将需要爬取的文献摘要存入指定地址，以json格式存入
+    if type =='qk':
+        address +='qk.json'
+    elif type =='hy':
+        address += 'hy.json'
+    elif type =='xw':
+        address += 'xw.json'
+    else:
+        print(d)
+        return
+    with open(address, 'a+', encoding='utf-8') as f:
+        f.write(json.dumps(d, ensure_ascii=False) + '\n')
+def get_massages(nums,results): #主体爬取模块
+    for index in range(nums):
+        d = dict()
+        title = results[index].find_element_by_xpath('.//*[@class="title"]')
+        d['title'] = title.text
+        essayType = results[index].find_element_by_xpath('.//*[@class="essay-type"]')
+        d['essayType'] = essayType.text
+
+        keywords = ''
+        try:
+            Keywords = results[index].find_elements_by_xpath('.//*[@class="keywords-list"]')
+            keywords = Keywords[0].text
+            for i in range(1, len(Keywords) - 1):
+                keywords += "，" + Keywords[i].text
+        except:
+            keywords = '无'
+        d['keywords'] = keywords
+        type = ''
+        Authors = results[index].find_elements_by_xpath('.//*[@class="authors"]')
+        if '期刊' in essayType.text: #爬取期刊论文
+            type ='qk'
+            periodical = results[index].find_element_by_xpath('.//*[@class="periodical-title"]')
+            d['periodical'] = periodical.text
+            authors=''
+            try:
+                authors = Authors[0].text
+                for i in range(1, len(Authors) - 1):
+                    authors += "，" + Authors[i].text
+            except:
+                pass
+            try:
+                essayDate = results[index].find_element_by_xpath('.//*[@class="t-ML6"]')
+                if len(Authors) != 0:
+                    authors += '，' + Authors[-1].text
+                d['date'] = essayDate.text
+            except:
+                if len(Authors) != 0:
+                    d['date'] = Authors[-1].text
+            try:
+                results[index].find_element_by_xpath('.//*[@class="t-MR10"]')
+                authors += " 等"
+            except:
+                pass
+            d['authors'] = authors 
+        elif '会议' in essayType.text: #爬取会议文章
+            type = 'hy'
+            authors = Authors[0].text
+            for i in range(1, len(Authors) - 1):
+                authors += "，" + Authors[i].text
+            d['association'] = Authors[-1].text
+            d['date'] = results[index].find_element_by_xpath('.//*[@class="org"]/span[1]').text
+            d['authors'] = authors
+        #学位论文包括硕士博士等。
+        else:
+            type='xw'
+            authors = Authors[0].text
+            d['authors'] = authors
+            d['major'] = results[index].find_element_by_xpath('.//*[@class="author-area"]/span[3]').text #爬取题目、作者、摘要等内容
+            d['college'] = results[index].find_element_by_xpath('.//*[@class="org"]/span[1]').text
+            d['date'] = results[index].find_element_by_xpath('.//*[@class="org"]/span[2]').text
+        try:
+            abstract = results[index].find_element_by_xpath('.//*[@class="abstract-area"]')
+            d['abstract'] = abstract.text
+        except:
+            d['abstract'] = ''
+        save_to_json(d,address,type)
+def search(sums,keywords): #搜索模块
+    driver = webdriver.Chrome()
+    driver.get(url)
+    driver.find_element_by_xpath('.//*[@class="tab-item"]').click()
+    sleep(1)
+
+    driver.find_element_by_xpath('.//*[@class="text-input-area"]/div[1]/textarea').send_keys(keywords)
+    driver.find_element_by_xpath('.//*[@class="submit-btn"]').click()
+    sleep(1)
+    mk_num = driver.find_element_by_xpath('.//*[@class="total-number"]').text
+    mark_num = int(mk_num[2:-3])
+    #num为实际可获取的论文数量
+    num = min(mark_num,sums)
+    want_num = num
+    while(1):
+        results = driver.find_elements_by_xpath('.//*[@class="result-list"]/div[3]/div')
+        nums = min(min(len(results)-1, 20),(want_num))
+        get_massages(nums, results)
+        want_num -=nums
+        if want_num == 0:
+            break
+        driver.find_element_by_xpath('.//*[@class="next"]').click()
+        sleep(1)
+    driver.close()
+
+address = 'C:\\Users\\SNBYD\\Desktop\\' #输出结果文件的保存地址，可根据需要自行更改
+keywords = input("输入检索表达式:") #交互式输入需要检索的关键字或关键词
+#search函数有两个参数，sums 为要爬的论文数量，这边默认值为100。keywords为需要检索的关键字
+search(100,keywords)
