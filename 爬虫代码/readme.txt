@@ -12,7 +12,7 @@
 
 关于万方数据爬虫代码：
 
-1.代码主体来源为https://blog.csdn.net/m0_43450539/article/details/115999317
+1.代码主体来源为https://blog.csdn.net/m0_43450539/article/details/115999317 已做简单改动。
 
 2.运行代码前一定要先安装好相关库（代码第1-3行和71-74行），尤其是selenium，安装方法可自行搜索。
 
