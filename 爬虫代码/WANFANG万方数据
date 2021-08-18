@@ -113,7 +113,7 @@ def search(sums,keywords): #搜索模块
         want_num -=nums
         if want_num == 0:
             break
-        driver.find_element_by_xpath('.//*[@class="next"]').click()
+        driver.find_element_by_xpath('/html[1]/body[1]/div[5]/div[1]/div[2]/div[2]/div[2]/div[2]/div[2]/div[1]/div[1]/div[5]/span[9]').click()
         page = page+1 #自动翻页
         sleep(1) #间隔时间
     driver.close()
