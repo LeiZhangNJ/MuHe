@@ -1,0 +1,19 @@
+import json
+from time import sleep
+from selenium import webdriver
+import selenium.webdriver.support.ui as ui
+
+p = 1 #初始页码为1
+driver = webdriver.Chrome() #打开浏览器
+file = open(r'0819.txt', mode='w',encoding='UTF-8') #打开提前准备好的txt文件，准备写入摘要
+i=0
+while p<3: #设置爬取页码范围
+ url = 'https://s.wanfangdata.com.cn/paper?q=%E5%8C%96%E5%AD%A6&p={}'.format(p) #爬取网址，p为页码变量
+ driver.get(url) #进入当前网址
+ sleep(2) #暂停
+ for i in range(1,21): #爬取当前页码20篇文章的摘要部分
+  abstract = driver.find_element_by_xpath('/html[1]/body[1]/div[5]/div[1]/div[2]/div[2]/div[1]/div[2]/div[2]/div[3]/div[%d]/div[1]/div[3]/span[2]'%i) #摘要具体位置
+  file.write(abstract.text) #将文献摘要写进提前准备好的txt文件里
+  file.write('\n')  #写完一篇摘要后换行
+ sleep(2) #暂停
+ p = p+1 #页码数加1，即翻页
