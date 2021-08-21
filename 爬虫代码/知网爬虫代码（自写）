@@ -1,0 +1,35 @@
+import json
+from time import sleep
+from selenium import webdriver
+import selenium.webdriver.support.ui as ui 
+#导入需要的工具，尤其是selenium
+file = open(r'0819.txt', mode='w',encoding='UTF-8') #打开txt文件备用，即将存储爬取的摘要
+url = 'https://kns.cnki.net/kns8/defaultresult/index' #知网首页
+driver = webdriver.Chrome() #自动打开虚拟浏览器
+i=1 #初始文章编号（一页20篇文章，编号1-20）
+p=1 #初始页码为1
+driver.get(url) #打开知网网址
+driver.find_element_by_xpath('/html[1]/body[1]/div[2]/div[1]/div[2]/div[1]/input[1]').send_keys("化学") #在首页输入‘化学’关键词，可自行更改关键词
+driver.find_element_by_xpath('/html[1]/body[1]/div[2]/div[1]/div[2]/div[1]/input[2]').click() #点击搜索按钮，搜索文献
+sleep(2) #等待2秒，防止网页加载不成功，下同
+driver.find_element_by_xpath('/html[1]/body[1]/div[3]/div[1]/div[1]/ul[1]/li[1]/a[1]').click() #点击按钮筛选出其中的期刊文献
+sleep(3)
+driver.find_element_by_xpath('/html[1]/body[1]/div[3]/div[2]/div[1]/div[1]/dl[3]/dt[1]/i[1]').click() #点击“发表年度”按钮
+sleep(2)
+driver.find_element_by_xpath('/html[1]/body[1]/div[3]/div[2]/div[1]/div[1]/dl[3]/dd[1]/div[1]/ul[1]/li[1]/input[1]').click() #点击选择2021年按钮，可自行更改
+sleep(2)
+driver.find_element_by_xpath("//a[contains(text(),'确定')]").click() #点击确定按钮筛选出2021年文献
+sleep(2)
+driver.find_element_by_xpath("//a[contains(text(),'中文')]").click() #点击中文按钮筛选出中文文献
+sleep(2)
+driver.find_element_by_xpath("/html[1]/body[1]/div[3]/div[2]/div[2]/div[2]/form[1]/div[1]/div[1]/div[2]/ul[2]/li[1]/i[1]").click() #点击选择好文献展示方式为详情展示
+sleep(3)
+while p<3: #爬取页码的上限，可自行更改，最高300
+ for i in range(1,21): #按文章编号依次爬取文献摘要
+  abstract = driver.find_element_by_xpath("/html[1]/body[1]/div[3]/div[2]/div[2]/div[2]/form[1]/div[1]/dl[1]/dd[%d]/div[2]/p[2]"%i) #提取出摘要
+  file.write(abstract.text) #将摘要输入txt文献
+  file.write('\n') #自动换行
+
+ driver.find_element_by_xpath("//a[@id='PageNext']").click() #自动点击下一页按钮，开始爬取下一页
+ p=p+1 #页码加1
+ sleep(3) #等待
