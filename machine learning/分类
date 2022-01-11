@@ -45,14 +45,14 @@ writer.save()
 
 #读取原数据集的描述符特征和目标值
 '''X=data.values[:195,:14]
-for i in range(X.shape[1]):
+for i in range(X.shape[1]): #数据归一化
     X[:,[i]] = preprocessing.MinMaxScaler().fit_transform(X[:,[i]])
 y=data.values[:195,14]'''
 
 
 #读取预测集prediction的描述符特征
 '''preX=data1.values[:,:]
-for i in range(preX.shape[1]):
+for i in range(preX.shape[1]): #数据归一化
     preX[:,[i]] = preprocessing.MinMaxScaler().fit_transform(preX[:,[i]])
 '''
 
