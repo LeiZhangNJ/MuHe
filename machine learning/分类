@@ -13,7 +13,9 @@ from sklearn.gaussian_process.kernels import RBF
 from sklearn.model_selection import KFold
 from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import confusion_matrix
-'''dataset= r'11.14.xlsx'
+
+#特征工程
+'''dataset= r'11.14.xlsx' #读取原始数据集
 data=pd.DataFrame(pd.read_excel(dataset))
 featureData=data.iloc[:,:19]
 corMat = DataFrame(featureData.corr())  #corr 求相关系数矩阵
@@ -27,9 +29,10 @@ plot.show()'''
 
 
 #读取文件
-dataset= r'CH31.xlsx'
+dataset= r'Train.xlsx' #读取特征工程后的Train数据集
 data=pd.DataFrame(pd.read_excel(dataset))
-
+dataset1= r'prediction.xlsx' #读取预测集
+data1=pd.DataFrame(pd.read_excel(dataset1))
 
 #画出所有特征关于目标值的相关系数排名
 featureData=data.iloc[:,:15]
@@ -40,11 +43,18 @@ corMat.to_excel(writer,'Sheet1')
 writer.save()
 
 
-#读取原数据集的特征和目标值
+#读取原数据集的描述符特征和目标值
 '''X=data.values[:195,:14]
 for i in range(X.shape[1]):
     X[:,[i]] = preprocessing.MinMaxScaler().fit_transform(X[:,[i]])
 y=data.values[:195,14]'''
+
+
+#读取预测集prediction的描述符特征
+'''preX=data1.values[:,:]
+for i in range(preX.shape[1]):
+    preX[:,[i]] = preprocessing.MinMaxScaler().fit_transform(preX[:,[i]])
+'''
 
 
 #读取自定义的训练集和测试集
