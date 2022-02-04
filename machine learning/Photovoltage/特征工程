@@ -1,1 +1,25 @@
 import pandas as pd
+import matplotlib.pyplot as plot
+import matplotlib.pyplot as plt
+
+dataset= r'train.xlsx' #读取训练集
+
+data=pd.DataFrame(pd.read_excel(dataset)) #
+
+featureData=data.iloc[:,:]
+
+corMat = DataFrame(featureData.corr())  #corr 求相关系数矩阵
+
+print(corMat)
+
+writer = pd.ExcelWriter('output0.xlsx') #写入Excel文件
+
+corMat.to_excel(writer,'Sheet1')
+
+writer.save()
+
+plt.figure(figsize=(20, 30))
+
+sns.heatmap(corMat, annot=False, vmax=1, square=True, cmap="Blues",linewidths=0)
+
+plot.show()
