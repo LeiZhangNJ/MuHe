@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pandas import DataFrame
 
-dataset= r'train.xlsx' #读取训练集
+dataset= r'origin.xlsx' #读取原始数据集
 
 data=pd.DataFrame(pd.read_excel(dataset)) #
 
