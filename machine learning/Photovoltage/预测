@@ -11,15 +11,19 @@ data=pd.DataFrame(pd.read_excel(dataset))
 data1=pd.DataFrame(pd.read_excel(dataset1))
 
 X=data.values[:,:-1]  #训练集
-Px=data1.values[:,:]  #预测集
+predX=data1.values[:,:]  #预测集
 #输入数据归一化
 for i in range(X.shape[1]):
     X[:,[i]] = preprocessing.MinMaxScaler().fit_transform(X[:,[i]])
 y=data.values[:,-1]
 
-for i in range(Px.shape[1]):
-    Px[:,[i]] = preprocessing.MinMaxScaler().fit_transform(Px[:,[i]])
+for i in range(predX.shape[1]):
+    predX[:,[i]] = preprocessing.MinMaxScaler().fit_transform(predX[:,[i]])
 
-lrTool=RandomForestRegressor()
+lrTool=RandomForestRegressor(random_state=i,n_estimators=j,criterion='squared_error')
 
 lrTool.fit(X,y) #模型训练
+
+predy=lrTool.predict(predX) #预测
+
+print(predy) #输出
