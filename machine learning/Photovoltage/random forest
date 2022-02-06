@@ -2,6 +2,9 @@ from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 from pandas import DataFrame
 from sklearn import preprocessing
+import numpy as np
+from scipy.stats import pearsonr
+from sklearn.metrics import mean_squared_error
 
 dataset= r'train.xlsx' #筛选特征后的训练集
 
@@ -14,15 +17,51 @@ for i in range(X.shape[1]):
 
 y=data.values[:,-1] #目标数值
 
-for i in range(0,1000):
-for j in range(0,1000):
- clf = RandomForestRegressor(random_state=i,n_estimators=19)
- clf.fit(X,y)
- sse = np.sum((ty - clf.predict(tx)) ** 2)
- sst = np.sum((ty - np.mean(tx)) ** 2)
- R2 = 1 - sse / sst
- o=pearsonr(ty,clf.predict(tx))
- if o[0]>0.85:
-#print(clf.score(X, y))
-  print(o[0],R2,i)
+for i in range(0,1000): #循环法调参
+ for j in range(0,1000):
+  clf = RandomForestRegressor(random_state=i,n_estimators=j,criterion='squared_error') #随机森林
+  clf.fit(X,y) #拟合
+  sse = np.sum((ty - clf.predict(tx)) ** 2)
+  sst = np.sum((ty - np.mean(tx)) ** 2)
+  R2 = 1 - sse / sst #R^2
+  o=pearsonr(ty,clf.predict(tx)) #pearson系数
+  if o[0]>0.9 and R2>0.9: #筛选条件
+    print(o[0],R2,i,j)
 
+lrTool=RandomForestRegressor(random_state=i,n_estimators=j,criterion='squared_error') #拟合
+
+lrTool.fit(X,y)
+
+mse = mean_squared_error(y, lrTool.predict(X))
+rmse = mse ** (1/2)
+
+sse = np.sum((y - lrTool.predict(X)) ** 2)
+sst = np.sum((y - np.mean(X)) ** 2)
+R2= 1 - sse / sst
+
+print(R2) #准确率
+print(rmse)
+print(pearsonr(y,lrTool.predict(X)))
+# 画图显示
+plt.yticks(fontproperties = 'Times New Roman', size = 14)
+plt.xticks(fontproperties = 'Times New Roman', size = 14)
+plt.rcParams['font.sans-serif'] = 'Roman'
+plt.rcParams['xtick.direction'] = 'in'
+plt.rcParams['ytick.direction'] = 'in'
+plt.plot(y,y,label='Real Data')
+plt.scatter(y,lrTool.predict(X),label='Predict',c='r')
+ax=plt.gca()
+ax.spines['bottom'].set_linewidth(2);###设置底部坐标轴的粗细
+ax.spines['left'].set_linewidth(2);####设置左边坐标轴的粗细
+ax.spines['right'].set_linewidth(2);###设置右边坐标轴的粗细
+ax.spines['top'].set_linewidth(2)
+plt.tick_params(width=2)
+ax.xaxis.set_tick_params(labelsize=20)
+plt.tick_params(which='major',length=8)
+plt.tick_params(which='minor',length=4,width=2)
+ax.yaxis.set_tick_params(labelsize=20)
+xminorLocator = MultipleLocator(1000)
+yminorLocator = MultipleLocator(1000)
+ax.xaxis.set_minor_locator(xminorLocator)
+ax.yaxis.set_minor_locator(yminorLocator)
+plt.show()
