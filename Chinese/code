@@ -51,7 +51,7 @@ model = word2vec.Word2Vec(sentences,sg=1, hs=0,min_count=1,window=10,vector_size
 model.wv.save_word2vec_format("word2vec0828.bin") #保存模型
 '''
 
-model = gensim.models.KeyedVectors.load_word2vec_format('word2vec0828.bin') #加载模型
+model = gensim.models.Word2Vec.load('word2vec0824.model') #加载模型
 '''
 X = np.array(model.wv['Cu','Fe','Zn','CuO','FeO','ZnO','光伏']) #选择词
 pca = PCA(n_components=2) #选择需要降成的维度
@@ -119,23 +119,30 @@ dd = list(itertools.combinations(dian, 2))
 matriy[250:]=dd[:250]
 print(len(matriy))#500组关联词
 
-res=[]
+res=[] #空列表存储结果
 for i in range(0,500):
+ try:
   cosin = model.wv.similarity(matriy[i][0],matriy[i][1]) #计算任意两个词向量之间的余弦相似度
   res.append(cosin)
-
+ except:
+  cosin = 0  # 计算任意两个词向量之间的余弦相似度
+  res.append(cosin)
+y_pred = res
 for i in range(0,500):
+ try:
   cosin = model.wv.similarity(matrix[i][0],matrix[i][1]) #计算任意两个词向量之间的余弦相似度
   res.append(cosin)
-
-#阈值设定0.4
+ except:
+  cosin = 1  # 计算任意两个词向量之间的余弦相似度
+  res.append(cosin)
 y_pred = res
+
 for i in range(0,1000):
     if y_pred[i]>0.4:
         y_pred[i]=1
     else:
         y_pred[i]=0
-
+print(len(y_pred))
 
 def storFile(data, fileName):
     with open(fileName, 'w', newline='') as f:
@@ -144,11 +151,11 @@ def storFile(data, fileName):
         for i in data:
             mywrite.writerow([i])
 
-#输出成csv格式
+
 data = y_pred
 print(data)
 storFile(data, "ha.csv")
-#实际的关联词和非关联词
+
 y_true = res
 for i in range(0,1000):
     if i<500:
