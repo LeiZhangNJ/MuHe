@@ -20,3 +20,8 @@ When the dataset is too large making it difficult to open the txt file, you can 
 
 Solid reaction数据集引用自：
 Kononova, O., Huo, H., He, T., Rong Z., Botari, T., Sun, W., Tshitoyan, V. and Ceder, G., 2019. Text-mined dataset of inorganic materials synthesis recipes. Scientific Data 6: 203.
+
+
+#原始摘要数据库（万方，知网，SpringerNature）
+
+直接下载已下载好的2000-2020年SpringerNature的'materials science'的原始摘要数据库链接（SpringerNature-2000-2020,以及中文的摘要数据库）：https://pan.baidu.com/s/1_iGUrtqI7fCoubA9RcPqww 提取码：1111
